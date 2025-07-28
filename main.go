@@ -13,17 +13,14 @@ func main() {
 	}
 
 	fmt.Println("db:", conf.DbUrl)
-	fmt.Println("db:", conf.CurrentUserName)
+	fmt.Println("username:", conf.CurrentUserName)
 
-	if err = config.SetUser("mmejiaaaaa :)"); err != nil {
-		fmt.Println("No pudo grabar: %w", err)
-	}
+	conf.SetUser("Carajillo")
 
 	conf, err = config.Read()
 	if err != nil {
 		fmt.Println("some shit happened: %w", err)
 	}
 
-	fmt.Println("db:", conf.DbUrl)
-	fmt.Println("db:", conf.CurrentUserName)
+	fmt.Printf("again.... : %+v", conf)
 }

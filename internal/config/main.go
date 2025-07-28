@@ -14,14 +14,9 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func getConfigFilePath() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("Cannot get config file path: %w", err)
-	}
-
-	filePath := path.Join(home, configFileName)
-	return filePath, nil
+func (cfg *Config) SetUser(username string) error {
+	cfg.CurrentUserName = username
+	return write(*cfg)
 }
 
 func Read() (Config, error) {
@@ -65,20 +60,12 @@ func write(cfg Config) error {
 	return nil
 }
 
-func SetUser(username string) error {
-	currentConfig, err := Read()
+func getConfigFilePath() (string, error) {
+	home, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		return "", fmt.Errorf("Cannot get config file path: %w", err)
 	}
 
-	newConfig := Config{
-		DbUrl:           currentConfig.DbUrl,
-		CurrentUserName: username,
-	}
-
-	if err = write(newConfig); err != nil {
-		return err
-	}
-
-	return nil
+	filePath := path.Join(home, configFileName)
+	return filePath, nil
 }
