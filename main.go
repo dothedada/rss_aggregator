@@ -1,26 +1,41 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"os"
 
 	"github.com/dothedada/rss_aggregator/internal/config"
 )
 
+type State struct {
+	cfg *config.Config
+}
+
 func main() {
 	conf, err := config.Read()
 	if err != nil {
-		fmt.Println("some shit happened: %w", err)
+		log.Fatalf("some shit happened: %w", err)
 	}
 
-	fmt.Println("db:", conf.DbUrl)
-	fmt.Println("username:", conf.CurrentUserName)
-
-	conf.SetUser("Carajillo")
-
-	conf, err = config.Read()
-	if err != nil {
-		fmt.Println("some shit happened: %w", err)
+	state := &State{
+		cfg: &conf,
 	}
 
-	fmt.Printf("again.... : %+v", conf)
+	cmds := commands{
+		handlers: make(map[string]func(*State, command) error),
+	}
+	cmds.register("login", handlerLogin)
+
+	if len(os.Args) < 2 {
+		log.Fatalf("Usage: cli <command> [args...]")
+	}
+
+	cmd := command{
+		name: os.Args[1],
+		args: os.Args[2:],
+	}
+
+	if err = cmds.run(state, cmd); err != nil {
+		log.Fatal(err)
+	}
 }
