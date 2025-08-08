@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -37,6 +39,18 @@ func main() {
 	}
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
+	cmds.register("users", handlerGetUsers)
+
+	cmds.register("reset", func(s *State, cmd command) error {
+
+		err := s.db.DropUsers(context.Background())
+		if err != nil {
+			return error(err)
+		}
+
+		fmt.Println("Clean users DB...")
+		return nil
+	})
 
 	if len(os.Args) < 2 {
 		log.Fatalf("Usage: cli <command> [args...]")
