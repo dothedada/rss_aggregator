@@ -1,13 +1,22 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"log"
+)
 
 func handlerLogin(s *State, cmd command) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("Login command expects a single parameter")
 	}
 
-	if err := s.cfg.SetUser(cmd.args[0]); err != nil {
+	user, err := s.db.GetUser(context.Background(), cmd.args[0])
+	if err != nil {
+		log.Fatalf("The user '%s' doesn't exists", cmd.args[0])
+	}
+
+	if err := s.cfg.SetUser(user.Name); err != nil {
 		return err
 	}
 
