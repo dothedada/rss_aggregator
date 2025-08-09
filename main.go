@@ -40,6 +40,7 @@ func main() {
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
 	cmds.register("users", handlerGetUsers)
+	cmds.register("agg", handlerAggregation)
 
 	cmds.register("reset", func(s *State, cmd command) error {
 
