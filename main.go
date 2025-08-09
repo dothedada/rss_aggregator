@@ -41,6 +41,7 @@ func main() {
 	cmds.register("register", handlerRegister)
 	cmds.register("users", handlerGetUsers)
 	cmds.register("agg", handlerAggregation)
+	cmds.register("addfeed", handlerAddFeed)
 
 	cmds.register("reset", func(s *State, cmd command) error {
 

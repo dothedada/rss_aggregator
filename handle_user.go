@@ -18,8 +18,8 @@ func handlerRegister(s *State, cmd command) error {
 	ctx := context.Background()
 	userData := database.CreateUserParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 		Name:      cmd.args[0],
 	}
 
