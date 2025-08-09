@@ -9,6 +9,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type FeedData struct {
+	Name     string
+	Url      string
+	UserName string
+}
+
 func handlerAggregation(s *State, cmd command) error {
 	feed, err := FetchFeed(
 		context.Background(),
@@ -47,15 +53,35 @@ func handlerAddFeed(s *State, cmd command) error {
 		return nil
 	}
 
-	fmt.Printf("Successfully added a new feed")
-	printFeed(rssFeed)
+	fmt.Printf("%s, you successfully added a new feed...\n", userData.Name)
+	printFeed(FeedData{Name: rssFeed.Name, Url: rssFeed.Url})
 	return nil
 }
 
-func printFeed(f database.Feed) {
-	fmt.Println("Feed data...")
+func printFeed(f FeedData) {
 	fmt.Printf("name: 		%s\n", f.Name)
 	fmt.Printf("url: 		%s\n", f.Url)
-	fmt.Printf("since: 		%s\n", f.CreatedAt)
-	fmt.Printf("Updated at:	%s\n", f.UpdatedAt)
+	if f.UserName != "" {
+		fmt.Printf("Subscriber:	%s\n", f.UserName)
+	}
+}
+
+func handlerListFeeds(s *State, _ command) error {
+	feeds, err := s.db.ListFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Followed feeds:")
+	for i, feed := range feeds {
+		fmt.Printf("%d) ", i)
+		printFeed(FeedData{
+			Name:     feed.FeedName,
+			Url:      feed.Url,
+			UserName: feed.SuscribedUser,
+		})
+	}
+	fmt.Println("--- That's all folks!!! ---")
+
+	return nil
 }
