@@ -6,12 +6,11 @@ import (
 	"time"
 
 	"github.com/dothedada/rss_aggregator/internal/database"
-	"github.com/dothedada/rss_aggregator/internal/rss"
 	"github.com/google/uuid"
 )
 
 func handlerAggregation(s *State, cmd command) error {
-	feed, err := rss.FetchFeed(
+	feed, err := FetchFeed(
 		context.Background(),
 		"https://www.wagslane.dev/index.xml",
 	)
@@ -25,18 +24,17 @@ func handlerAggregation(s *State, cmd command) error {
 }
 
 func handlerAddFeed(s *State, cmd command) error {
-	if len(cmd.args) != 2 {
-		return fmt.Errorf("usage: %s <rss name> <rss url>", cmd.name)
-	}
-
 	ctx := context.Background()
-
 	userData, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 	if err != nil {
 		return err
 	}
 
-	params := database.CreateFeedParams{
+	if len(cmd.args) != 2 {
+		return fmt.Errorf("usage: %s <rss name> <rss url>", cmd.name)
+	}
+
+	fetchFromData := database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
@@ -44,14 +42,20 @@ func handlerAddFeed(s *State, cmd command) error {
 		Url:       cmd.args[1],
 		UserID:    userData.ID,
 	}
-
-	rssFeed, err := s.db.CreateFeed(ctx, params)
+	rssFeed, err := s.db.CreateFeed(ctx, fetchFromData)
 	if err != nil {
 		return nil
 	}
 
-	fmt.Printf("Successfully added '%s' to your feed.\n", rssFeed.Name)
-	fmt.Printf("It would fetch data from '%s'.\n", rssFeed.Url)
+	fmt.Printf("Successfully added a new feed")
+	printFeed(rssFeed)
 	return nil
+}
 
+func printFeed(f database.Feed) {
+	fmt.Println("Feed data...")
+	fmt.Printf("name: 		%s\n", f.Name)
+	fmt.Printf("url: 		%s\n", f.Url)
+	fmt.Printf("since: 		%s\n", f.CreatedAt)
+	fmt.Printf("Updated at:	%s\n", f.UpdatedAt)
 }
