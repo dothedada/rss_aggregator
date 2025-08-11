@@ -37,7 +37,7 @@ func handlerAddFeed(s *State, cmd command) error {
 	}
 
 	if len(cmd.args) != 2 {
-		return fmt.Errorf("usage: %s <rss name> <rss url>", cmd.name)
+		return fmt.Errorf("usage: %s <rss name> <rss url>\n", cmd.name)
 	}
 
 	fetchFromData := database.CreateFeedParams{
