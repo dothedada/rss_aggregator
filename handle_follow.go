@@ -17,12 +17,12 @@ func handlerFollow(s *State, cmd command) error {
 
 	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 	if err != nil {
-		return err
+		return fmt.Errorf("Couldn't fetch the user data: %w", err)
 	}
 
 	feed, err := s.db.GetFeedByUrl(ctx, cmd.args[0])
 	if err != nil {
-		return err
+		return fmt.Errorf("Cannot get the feed: %w", err)
 	}
 
 	followData := database.CreateFeedFollowParams{
@@ -33,13 +33,17 @@ func handlerFollow(s *State, cmd command) error {
 		FeedID:    feed.ID,
 	}
 
-	feedFollowed, err := s.db.CreateFeedFollow(context.Background(), followData)
+	feedFollowed, err := s.db.CreateFeedFollow(ctx, followData)
 	if err != nil {
-		return err
+		return fmt.Errorf("Cannot create the feed follow: %w", err)
 	}
 
-	fmt.Println("now you follow", feedFollowed.FeedName)
-	fmt.Println("of", feedFollowed.UserName)
+	fmt.Println("Succesfully created a new follow", feedFollowed.FeedName)
+	fmt.Printf(
+		"Name:	%s\nUser:	%s",
+		feedFollowed.FeedName,
+		feedFollowed.UserName,
+	)
 
 	return nil
 }
