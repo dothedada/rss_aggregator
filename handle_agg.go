@@ -28,6 +28,45 @@ type RSSItem struct {
 	PubDate     string `xml:"pubDate"`
 }
 
+func handlerAggregation(s *State, cmd command) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("usage: %s <time between scraps>\n", cmd.name)
+	}
+
+	timeBetweenRequest, err := time.ParseDuration(cmd.args[0])
+	if err != nil {
+		return fmt.Errorf("Invalid time duration: %w", err)
+	}
+
+	ticker := time.NewTicker(timeBetweenRequest)
+	for ; ; <-ticker.C {
+		scrapeFeed(s)
+	}
+}
+
+func scrapeFeed(s *State) (*RSSFeed, error) {
+	ctx := context.Background()
+
+	feedSource, err := s.db.GetNextFeedToFetch(ctx)
+	if err != nil {
+		return &RSSFeed{}, fmt.Errorf("Cannot get the next feed to fetch: %w", err)
+	}
+
+	err = s.db.MarkFeedFetched(ctx, feedSource.ID)
+	if err != nil {
+		return &RSSFeed{}, fmt.Errorf("Cannot update feed fetch update: %w", err)
+	}
+
+	feed, err := FetchFeed(ctx, feedSource.Url)
+	if err != nil {
+		return &RSSFeed{}, fmt.Errorf("Error while scraping feed: %w", err)
+	}
+
+	fmt.Printf("Title: %s\n", feed.Channel.Title)
+
+	return feed, nil
+}
+
 func FetchFeed(ctx context.Context, url string) (*RSSFeed, error) {
 	client := &http.Client{
 		Timeout: 10 * time.Second,

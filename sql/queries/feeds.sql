@@ -43,3 +43,15 @@ AND feed_follow.feed_id = (
 	SELECT id FROM feeds
 	WHERE url = $2
 );
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds 
+SET
+	last_fetched_at = CURRENT_TIMESTAMP,
+	updated_at = CURRENT_TIMESTAMP
+WHERE id = $1;
+
+-- name: GetNextFeedToFetch :one
+SELECT * FROM feeds
+ORDER BY last_fetched_at ASC NULLS FIRST
+LIMIT 1;

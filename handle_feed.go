@@ -15,20 +15,6 @@ type FeedData struct {
 	UserName string
 }
 
-func handlerAggregation(s *State, cmd command) error {
-	feed, err := FetchFeed(
-		context.Background(),
-		"https://www.wagslane.dev/index.xml",
-	)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("%v", feed)
-
-	return nil
-}
-
 func handlerAddFeed(s *State, cmd command, user database.User) error {
 	ctx := context.Background()
 	if len(cmd.args) != 2 {
