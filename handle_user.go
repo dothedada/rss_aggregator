@@ -46,7 +46,7 @@ func handlerLogin(s *State, cmd command) error {
 
 	user, err := s.db.GetUser(context.Background(), cmd.args[0])
 	if err != nil {
-		log.Fatalf("Couldn't finf the user '%s'", cmd.args[0])
+		log.Fatalf("Couldn't find the user '%s'", cmd.args[0])
 	}
 
 	if err := s.cfg.SetUser(user.Name); err != nil {

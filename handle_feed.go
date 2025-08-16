@@ -29,13 +29,8 @@ func handlerAggregation(s *State, cmd command) error {
 	return nil
 }
 
-func handlerAddFeed(s *State, cmd command) error {
+func handlerAddFeed(s *State, cmd command, user database.User) error {
 	ctx := context.Background()
-	userData, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
-
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("usage: %s <rss name> <rss url>\n", cmd.name)
 	}
@@ -46,7 +41,7 @@ func handlerAddFeed(s *State, cmd command) error {
 		UpdatedAt: time.Now().UTC(),
 		Name:      cmd.args[0],
 		Url:       cmd.args[1],
-		UserID:    userData.ID,
+		UserID:    user.ID,
 	}
 	rssFeed, err := s.db.CreateFeed(ctx, fetchFromData)
 	if err != nil {
@@ -57,7 +52,7 @@ func handlerAddFeed(s *State, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		UserID:    userData.ID,
+		UserID:    user.ID,
 		FeedID:    rssFeed.ID,
 	}
 	feedSubscription, err := s.db.CreateFeedFollow(ctx, feedFollowData)
@@ -99,6 +94,24 @@ func handlerListFeeds(s *State, _ command) error {
 		})
 	}
 	fmt.Println("--- That's all folks!!! ---")
+
+	return nil
+}
+
+func handlerUnfollowFeed(s *State, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("usage: %s <rss url>\n", cmd.name)
+	}
+
+	deleteParams := database.DeleteFeedByURLParams{
+		UserID: user.ID,
+		Url:    cmd.args[0],
+	}
+
+	err := s.db.DeleteFeedByURL(context.Background(), deleteParams)
+	if err != nil {
+		return fmt.Errorf("Cannot delet folling feed record: %w", err)
+	}
 
 	return nil
 }
